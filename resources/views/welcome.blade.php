@@ -1,132 +1,118 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>Laravel</title>
+    <title>Autogestión SINEA</title>
     <link rel="stylesheet" href="{{ asset('assets/icons/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="shortcut icon" href="{{asset ('assets/img/logos/inea.ico')}}" type="image/x-icon">
 </head>
 
 <body>
 
-    <div
-        class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
-        <main class="flex max-w-[335px] w-full flex-col-reverse lg:max-w-4xl lg:flex-row"> 
+    <div class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
+        <main class="flex max-w-[335px] w-full flex-col-reverse lg:max-w-4xl lg:flex-row">
 
-                <div class="card">
-                    <div class="card-body">
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                            data-bs-target="#exampleModal">Olvidé mi Contraseña</button>
+            <div class="card">
+                <div class="card-body">
+                    <!-- Modal siempre visible -->
+                    <div class="modal show" id="exampleModal"  data-bs-backdrop="static" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="false">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Gestión de Credenciales de Acceso en SINEA</h5>
+                                    <button type="button" class="btn-close" onclick="resetForm()" aria-label="Cerrar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="alert" style="display:none;"></div>
 
-                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                            aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">Solicitud de Restablecimiento de
-                                            Contraseña</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Cerrar"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div id="alert" style="display:none;"></div>
-
-                                        <form id="resetPasswordForm" class="was-validated">
-                                            <div class="mb-3">
-                                                <label for="cedula" class="col-form-label">Cédula de
-                                                    identidad:</label>
-                                                <div class="input-group">
-                                                    <span class="input-group-text"><i class="fas fa-id-card"></i></span>
-                                                    <input type="number" class="form-control" id="cedula"
-                                                        onchange="buscarSolicitante()" required
-                                                        onkeydown="return soloNumeros(event)">
-                                                </div>
-                                                <div class="invalid-feedback">Por favor, ingrese su cédula de identidad.
-                                                </div>
+                                    <form id="resetPasswordForm" class="was-validated">
+                                        <div class="mb-3">
+                                            <label for="cedula" class="form-label"> Ingrese únicamente los dígitos numéricos de su documento de identificación:</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                                <input type="number" class="form-control" id="cedula" onchange="buscarSolicitante()" required onkeydown="return soloNumeros(event)" placeholder="Ej: 12345678">
                                             </div>
+                                            <div class="invalid-feedback">Por favor, ingrese su cédula de identidad.</div>
+                                            <div class="text-center mt-2">
+                                                <button class="btn btn-success" onclick="buscarSolicitante()">
+                                                    Buscar <i class="fa-solid fa-magnifying-glass"></i>
+                                                </button>
+                                            </div>
+                                        </div>
 
-                                            <div class="mb-3" id="solicitanteInfo" style="display:none;">
-                                                <div class="card">
-                                                    <div class="card-body">
-                                                        <h5 class="card-title"><i class="fas fa-user"></i> Información
-                                                            del Usuario</h5>
-                                                        <br>
-                                                        <div class="list-group col-12">
-                                                            <div class="list-group-item d-flex align-items-center">
-                                                                <i class="fas fa-id-badge me-2"></i>
-                                                                <div class="w-100">
-                                                                    <strong>UserId</strong> <span
-                                                                        id="user_id_display"></span>
-                                                                </div>
+                                        <div class="mb-3" id="solicitanteInfo" style="display:none;">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h5 class="card-title"><i class="fas fa-user"></i> Información del Usuario</h5>
+                                                    <br>
+                                                    <div class="list-group col-12">
+                                                        <div class="list-group-item d-flex align-items-center">
+                                                            <i class="fas fa-id-badge me-2"></i>
+                                                            <div class="w-100">
+                                                                <strong>UserId</strong> <span id="user_id_display"></span>
                                                             </div>
-                                                            <div class="list-group-item d-flex align-items-center">
-                                                                <i class="fas fa-user-circle me-2"></i>
-                                                                <div class="w-100">
-                                                                    <strong>Nombre Completo:</strong> <span
-                                                                        id="nombre_completo_display"></span>
-                                                                </div>
+                                                        </div>
+                                                        <div class="list-group-item d-flex align-items-center">
+                                                            <i class="fas fa-user-circle me-2"></i>
+                                                            <div class="w-100">
+                                                                <strong>Nombre completo/Razón Social:</strong> <span id="nombre_completo_display"></span>
                                                             </div>
-                                                            <div class="list-group-item d-flex align-items-center">
-                                                                <i class="fas fa-envelope me-2"></i>
-                                                                <div class="w-100">
-                                                                    <strong>Correo vinculado:</strong> <span
-                                                                        id="email_display"></span>
-                                                                </div>
+                                                        </div>
+                                                        <div class="list-group-item d-flex align-items-center">
+                                                            <i class="fas fa-envelope me-2"></i>
+                                                            <div class="w-100">
+                                                                <strong>Correo vinculado:</strong> <span id="email_display"></span>
                                                             </div>
-                                                            <div class="list-group-item d-flex align-items-center">
-                                                                <i class="fas fa-sign-in-alt me-2"></i>
-                                                                <div class="w-100">
-                                                                    <strong>Login:</strong> <span
-                                                                        id="login_display"></span>
-                                                                </div>
+                                                        </div>
+                                                        <div class="list-group-item d-flex align-items-center">
+                                                            <i class="fas fa-sign-in-alt me-2"></i>
+                                                            <div class="w-100">
+                                                                <strong>Usuario:</strong> <span id="login_display"></span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
 
-                                            <div class="mb-3" id="preguntasSeguridad" style="display:none;">
-                                                <h5>Responda las siguientes preguntas de seguridad:</h5>
-                                                <div id="preguntas"></div>
-                                            </div>
+                                        <div class="mb-3" id="preguntasSeguridad" style="display:none;">
+                                            <h5 class="alert alert-warning fw-bold fs-6"> Para restablecer sus datos de acceso al SINEA, por favor, responda las siguientes preguntas de verificación <i class="fa-solid fa-circle-info"></i> </h5>
+                                            <div id="preguntas"></div>
+                                        </div>
 
-                                            <div class="mb-3" id="emailContainer" style="display:none;">
-                                                <label for="email" class="col-form-label">Ingrese su correo
-                                                    electrónico:</label>
-                                                <div class="input-group">
-                                                    <span class="input-group-text"><i
-                                                            class="fas fa-envelope"></i></span>
-                                                    <input type="email" class="form-control"
-                                                        placeholder="email@example.com" id="email" required>
-                                                </div>
-                                                <div class="invalid-feedback">Por favor, ingrese un correo electrónico
-                                                    válido.</div>
+                                        <div class="mb-3" id="emailContainer" style="display:none;">
+                                            <label for="email" class="form-label alert alert-warning fw-bold fs-6">
+                                                Por favor, ingrese la dirección de correo electrónico donde desea recibir sus nuevas credenciales de acceso
+                                                <i class="fa-solid fa-circle-info"></i>
+                                            </label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                                <input type="email" class="form-control" placeholder="email@example.com" id="email" required>
+                                                <div class="invalid-feedback">Por favor, ingrese un correo electrónico válido.</div>
                                             </div>
+                                        </div>
 
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary"
-                                                    data-bs-dismiss="modal">Cerrar</button>
-                                                <button type="button" class="btn btn-primary"
-                                                    id="resetPasswordButton" style="display:none;">Validar
-                                                    Respuestas</button>
-                                                <button type="button" class="btn btn-success"
-                                                    id="solicitarContraseñaButton" style="display:none;">Solicitar
-                                                    Contraseña</button>
-                                            </div>
-                                        </form>
-                                    </div>
+                                        <div class="modal-footer justify-content-center">
+                                            <button type="button" class="btn btn-danger" onclick="resetForm()">
+                                                <i class="fas fa-times-circle"></i> Borrar campos
+                                            </button>
+                                            <button type="button" class="btn btn-success" id="resetPasswordButton" style="display:none;">
+                                                <i class="fas fa-check-circle"></i> Validar Respuestas
+                                            </button>
+                                            <button type="button" class="btn btn-success" id="solicitarContraseñaButton" style="display:none;">
+                                                <i class="fas fa-key"></i> Solicitar Contraseña
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
-
                     </div>
+
                 </div>
-            </div>
-            <div
-                class="bg-[#fff2f2] dark:bg-[#1D0002] relative lg:-ml-px -mb-px lg:mb-0 rounded-t-lg lg:rounded-t-none lg:rounded-r-lg aspect-[335/376] lg:aspect-auto w-full lg:w-[438px] shrink-0 overflow-hidden">
-                {{-- Aquí puedes agregar el logo de Laravel o cualquier otro contenido --}}
             </div>
         </main>
     </div>
@@ -135,6 +121,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        $(document).ready(function() {
+            // Mostrar la modal automáticamente al cargar la página
+            $('#exampleModal').modal('show');
+        });
+
         function buscarSolicitante() {
             const cedula = $('#cedula').val();
             $.ajax({

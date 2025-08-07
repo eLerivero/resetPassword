@@ -21,7 +21,8 @@ class ResetPassword extends Mailable
 
     public function build()
     {
-        return $this->view('mails.sinea.resetPassword')
+        return $this->view('mails.sinea.ResetPassword')
+        ->subject('Reestablecimiento de contraseña SINEA')
             ->with([
                 'newPassword' => $this->newPassword,
                 'login' => $this->login,

@@ -26,11 +26,13 @@ class ReestablecerContraseña extends Controller
     public function buscarSolicitante(Request $request)
     {
         $request->validate([
-            'cedula' => 'required|integer',
+            'cedula' => 'required|string',
         ]);
 
         // Verificar si la cédula existe en la tabla solicitantes
-        $solicitante = Solicitantes::with('authakeUser')->where('rif', 'like', (string)$request->input('cedula'))->first();
+        $solicitante = ::with('authakeUser')->where('rif', 'like', (string)$request->input('cedula'))->first();
+
+      //  dd($solicitante);
 
         if (!$solicitante) {
             return response()->json([
@@ -75,7 +77,7 @@ class ReestablecerContraseña extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'nombre' => $solicitante->nombre ?? '',
+                'nombre' => $soliSolicitantescitante->nombre ?? '',
                 'email' => $solicitante->authakeUser->email ?? '',
                 'login' => $solicitante->authakeUser->login ?? '',
                 'preguntas' => $preguntas,
@@ -84,7 +86,7 @@ class ReestablecerContraseña extends Controller
         ]);
     }
 
-    private function obtenerPreguntasSeguridad($marino)
+    private function obtenerPreguntasSeguridad($marino) 
     {
         $campos = [];
         if ($marino->fecha_nacimiento) $campos['fecha_nacimiento'] = $marino->fecha_nacimiento;
@@ -141,7 +143,7 @@ class ReestablecerContraseña extends Controller
     public function updatePassword(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|integer',
+            'user_id' => 'required|string',
             'email' => 'required|email',
         ]);
 
@@ -182,6 +184,6 @@ class ReestablecerContraseña extends Controller
         ///////* Testing para ver la plantilla que va recibir el solicitantes *//////////
         $login = 'UsuarioTest';
         $newPassword = 'ContraseñaTest';
-        return view('mails.sinea.resetPassword', compact('login', 'newPassword'));
+        return view('mails.sinea.ResetPassword', compact('login', 'newPassword'));
     }
 }
