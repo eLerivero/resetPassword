@@ -7,7 +7,7 @@
     <title>Autogestión SINEA</title>
     <link rel="stylesheet" href="{{ asset('assets/icons/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/bootstrap/css/bootstrap.min.css') }}">
-    <link rel="shortcut icon" href="{{asset ('assets/img/logos/inea.ico')}}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('assets/img/logos/inea.ico') }}" type="image/x-icon">
 </head>
 
 <body>
@@ -17,27 +17,34 @@
 
             <div class="card">
                 <div class="card-body">
-                    <!-- Modal siempre visible -->
-                    <div class="modal show" id="exampleModal"  data-bs-backdrop="static" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="false">
+                    <div class="modal show" id="exampleModal" data-bs-backdrop="static" tabindex="-1"
+                        aria-labelledby="exampleModalLabel" aria-hidden="false">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">Gestión de Credenciales de Acceso en SINEA</h5>
-                                    <button type="button" class="btn-close" onclick="resetForm()" aria-label="Cerrar"></button>
+                                    <h5 class="modal-title" id="exampleModalLabel">Gestión de Credenciales de Acceso en
+                                        SINEA</h5>
+                                    <button type="button" class="btn-close" onclick="resetForm()"
+                                        aria-label="Cerrar"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div id="alert" style="display:none;"></div>
 
                                     <form id="resetPasswordForm" class="was-validated">
                                         <div class="mb-3">
-                                            <label for="cedula" class="form-label"> Ingrese únicamente los dígitos numéricos de su documento de identificación:</label>
+                                            <label for="cedula" class="form-label">Ingrese únicamente los dígitos
+                                                numéricos de su documento de identificación:</label>
                                             <div class="input-group">
                                                 <span class="input-group-text"><i class="fas fa-id-card"></i></span>
-                                                <input type="number" class="form-control" id="cedula" onchange="buscarSolicitante()" required onkeydown="return soloNumeros(event)" placeholder="Ej: 12345678">
+                                                <input type="number" class="form-control" id="cedula"
+                                                    onchange="buscarSolicitante()" required
+                                                    onkeydown="return soloNumeros(event)" placeholder="Ej: 12345678">
                                             </div>
-                                            <div class="invalid-feedback">Por favor, ingrese su cédula de identidad.</div>
+                                            <div class="invalid-feedback">Por favor, ingrese su cédula de identidad.
+                                            </div>
                                             <div class="text-center mt-2">
-                                                <button class="btn btn-success" onclick="buscarSolicitante()">
+                                                <button class="btn btn-success" type="button"
+                                                    onclick="buscarSolicitante()">
                                                     Buscar <i class="fa-solid fa-magnifying-glass"></i>
                                                 </button>
                                             </div>
@@ -46,31 +53,36 @@
                                         <div class="mb-3" id="solicitanteInfo" style="display:none;">
                                             <div class="card">
                                                 <div class="card-body">
-                                                    <h5 class="card-title"><i class="fas fa-user"></i> Información del Usuario</h5>
+                                                    <h5 class="card-title"><i class="fas fa-user"></i> Información del
+                                                        Usuario</h5>
                                                     <br>
                                                     <div class="list-group col-12">
                                                         <div class="list-group-item d-flex align-items-center">
                                                             <i class="fas fa-id-badge me-2"></i>
                                                             <div class="w-100">
-                                                                <strong>UserId</strong> <span id="user_id_display"></span>
+                                                                <strong>UserId</strong> <span
+                                                                    id="user_id_display"></span>
                                                             </div>
                                                         </div>
                                                         <div class="list-group-item d-flex align-items-center">
                                                             <i class="fas fa-user-circle me-2"></i>
                                                             <div class="w-100">
-                                                                <strong>Nombre completo/Razón Social:</strong> <span id="nombre_completo_display"></span>
+                                                                <strong>Nombre completo/Razón Social:</strong> <span
+                                                                    id="nombre_completo_display"></span>
                                                             </div>
                                                         </div>
                                                         <div class="list-group-item d-flex align-items-center">
                                                             <i class="fas fa-envelope me-2"></i>
                                                             <div class="w-100">
-                                                                <strong>Correo vinculado:</strong> <span id="email_display"></span>
+                                                                <strong>Correo vinculado:</strong> <span
+                                                                    id="email_display"></span>
                                                             </div>
                                                         </div>
                                                         <div class="list-group-item d-flex align-items-center">
                                                             <i class="fas fa-sign-in-alt me-2"></i>
                                                             <div class="w-100">
-                                                                <strong>Usuario:</strong> <span id="login_display"></span>
+                                                                <strong>Usuario:</strong> <span
+                                                                    id="login_display"></span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -79,19 +91,24 @@
                                         </div>
 
                                         <div class="mb-3" id="preguntasSeguridad" style="display:none;">
-                                            <h5 class="alert alert-warning fw-bold fs-6"> Para restablecer sus datos de acceso al SINEA, por favor, responda las siguientes preguntas de verificación <i class="fa-solid fa-circle-info"></i> </h5>
+                                            <h5 class="alert alert-warning fw-bold fs-6">Para restablecer sus datos de
+                                                acceso al SINEA, por favor, responda las siguientes preguntas de
+                                                verificación <i class="fa-solid fa-circle-info"></i></h5>
                                             <div id="preguntas"></div>
                                         </div>
 
                                         <div class="mb-3" id="emailContainer" style="display:none;">
                                             <label for="email" class="form-label alert alert-warning fw-bold fs-6">
-                                                Por favor, ingrese la dirección de correo electrónico donde desea recibir sus nuevas credenciales de acceso
+                                                Por favor, ingrese la dirección de correo electrónico donde desea
+                                                recibir sus nuevas credenciales de acceso
                                                 <i class="fa-solid fa-circle-info"></i>
                                             </label>
                                             <div class="input-group">
                                                 <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                                <input type="email" class="form-control" placeholder="email@example.com" id="email" required>
-                                                <div class="invalid-feedback">Por favor, ingrese un correo electrónico válido.</div>
+                                                <input type="email" class="form-control"
+                                                    placeholder="email@example.com" id="email" required>
+                                                <div class="invalid-feedback">Por favor, ingrese un correo electrónico
+                                                    válido.</div>
                                             </div>
                                         </div>
 
@@ -99,10 +116,12 @@
                                             <button type="button" class="btn btn-danger" onclick="resetForm()">
                                                 <i class="fas fa-times-circle"></i> Borrar campos
                                             </button>
-                                            <button type="button" class="btn btn-success" id="resetPasswordButton" style="display:none;">
+                                            <button type="button" class="btn btn-success" id="resetPasswordButton"
+                                                style="display:none;">
                                                 <i class="fas fa-check-circle"></i> Validar Respuestas
                                             </button>
-                                            <button type="button" class="btn btn-success" id="solicitarContraseñaButton" style="display:none;">
+                                            <button type="button" class="btn btn-success"
+                                                id="solicitarContraseñaButton" style="display:none;">
                                                 <i class="fas fa-key"></i> Solicitar Contraseña
                                             </button>
                                         </div>
@@ -114,7 +133,7 @@
 
                 </div>
             </div>
-        </main>
+            </main>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -122,7 +141,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function() {
-            // Mostrar la modal automáticamente al cargar la página
             $('#exampleModal').modal('show');
         });
 
@@ -209,7 +227,7 @@
                         <div class="mb-3">
                             <label>${key.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, char => char.toUpperCase())}:</label>
                             <input type="text" class="form-control" data-key="${key}" required>
-                            <div class="invalid-feedback">Por favor, complete su lugar de nacimiento.</div>
+                            <div class="invalid-feedback">Por favor, complete este campo.</div>
                         </div>`;
                 }
                 preguntasContainer.append(inputField);
@@ -338,4 +356,5 @@
     <script src="{{ asset('assets/js/funciones.js') }}"></script>
     <script src="{{ asset('assets/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 </body>
+
 </html>
