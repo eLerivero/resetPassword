@@ -11,10 +11,9 @@
 </head>
 
 <body>
-
-    <div class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
+    <div
+        class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
         <main class="flex max-w-[335px] w-full flex-col-reverse lg:max-w-4xl lg:flex-row">
-
             <div class="card">
                 <div class="card-body">
                     <div class="modal show" id="exampleModal" data-bs-backdrop="static" tabindex="-1"
@@ -37,14 +36,13 @@
                                             <div class="input-group">
                                                 <span class="input-group-text"><i class="fas fa-id-card"></i></span>
                                                 <input type="number" class="form-control" id="cedula"
-                                                    onchange="buscarSolicitante()" required
                                                     onkeydown="return soloNumeros(event)" placeholder="Ej: 12345678">
                                             </div>
                                             <div class="invalid-feedback">Por favor, ingrese su cédula de identidad.
                                             </div>
                                             <div class="text-center mt-2">
                                                 <button class="btn btn-success" type="button"
-                                                    onclick="buscarSolicitante()">
+                                                    onclick="buscarSolicitante()" require>
                                                     Buscar <i class="fa-solid fa-magnifying-glass"></i>
                                                 </button>
                                             </div>
@@ -58,10 +56,12 @@
                                                     <br>
                                                     <div class="list-group col-12">
                                                         <div class="list-group-item d-flex align-items-center">
-                                                            <i class="fas fa-id-badge me-2"></i>
-                                                            <div class="w-100">
-                                                                <strong>UserId</strong> <span
-                                                                    id="user_id_display"></span>
+                                                            <div class="d-none">
+                                                                <i class="fas fa-id-badge me-2"></i>
+                                                                <div class="w-100">
+                                                                    <strong>UserId</strong> <span
+                                                                        id="user_id_display"></span>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                         <div class="list-group-item d-flex align-items-center">
@@ -112,6 +112,29 @@
                                             </div>
                                         </div>
 
+                                        <div class="mb-3" id="emailReportarCaso" style="display:none;">
+                                            <label for="emailReportarCaso"
+                                                class="form-label alert alert-warning fw-bold fs-6">
+                                                Por favor, ingrese la dirección de correo electrónico para reportar
+                                                caso.
+                                                <i class="fa-solid fa-circle-info"></i>
+                                            </label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                                <input type="email" class="form-control"
+                                                    placeholder="email@example.com" id="emailReportarCaso" required>
+                                                <div class="invalid-feedback">Por favor, ingrese un correo electrónico
+                                                    válido.</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3" id="reportarCasoButton" style="display:none;">
+                                            <button type="button" class="btn btn-warning" id="reportarCasoButton">
+                                                Reportar Caso <i class="fas fa-paper-plane"></i>
+                                            </button>
+                                        </div>
+
+
                                         <div class="modal-footer justify-content-center">
                                             <button type="button" class="btn btn-danger" onclick="resetForm()">
                                                 <i class="fas fa-times-circle"></i> Borrar campos
@@ -130,10 +153,9 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
-            </main>
+        </main>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -168,14 +190,58 @@
             });
         }
 
+        // Evento para el botón de reportar caso
+        $('#reportarCasoButton').click(function() {
+            const email = $('#email').val();
+            const cedula = $('#cedula').val();
+            const rif = $('#user_id_display').text();
+
+            $.ajax({
+                url: '{{ route('sinea.enviarCorreoDuplicados') }}',
+                method: 'POST',
+                data: {
+                    email: email,
+                    rif: rif,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        mostrarAlerta(response.message, 'success');
+                        resetForm();
+                    } else {
+                        mostrarAlerta(response.message, 'error');
+                    }
+                },
+                error: function(xhr) {
+                    const errors = xhr.responseJSON.errors;
+                    const errorMessage = errors ? Object.values(errors).flat().join(' ') :
+                        'Error al reportar el caso. Intente nuevamente.';
+                    mostrarAlerta(errorMessage, 'error');
+                }
+            });
+        });
+
         function mostrarDatosSolicitante(data) {
             $('#nombre_completo_display').text(data.nombre);
             $('#user_id_display').text(data.user_id);
             $('#email_display').text(data.email);
             $('#login_display').text(data.login);
-            $('#solicitanteInfo, #preguntasSeguridad, #resetPasswordButton').show();
-            $('#emailContainer, #solicitarContraseñaButton').hide();
-            mostrarPreguntas(data.preguntas);
+            $('#solicitanteInfo').show();
+
+            // Si hay duplicados, mostrar el campo de email
+            if (data.success === false) {
+                $('#emailReportarCaso, #reportarCasoButton').show(); // Mostrar el campo de email
+                $('#resetPasswordButton').hide(); // Ocultar el botón de validar respuestas
+                $('#solicitarContraseñaButton').hide(); // Ocultar el botón de solicitar contraseña
+                $('#reportarCasoButton').show(); // Mostrar el botón de reportar caso
+                $('#emailReportarCaso').val(''); // Limpiar el email para que el usuario lo ingrese
+                mostrarAlerta('La cédula existe más de una vez. Por favor, ingrese su correo para enviar la solución.',
+                    'warning');
+            } else {
+                $('#preguntasSeguridad, #resetPasswordButton').show(); // Mostrar preguntas de seguridad
+                $('#emailReportarCaso, #reportarCasoButton').hide(); // Ocultar el campo de email y reportar caso
+                mostrarPreguntas(data.preguntas); // Mostrar preguntas de seguridad
+            }
         }
 
         function mostrarPreguntas(preguntas) {
@@ -336,7 +402,7 @@
 
         function resetForm() {
             $('#resetPasswordForm')[0].reset();
-            $('#solicitanteInfo, #preguntasSeguridad, #resetPasswordButton, #alert, #emailContainer, #solicitarContraseñaButton')
+            $('#solicitanteInfo, #preguntasSeguridad, #resetPasswordButton, #alert, #emailContainer, #reportarCasoButton, #solicitarContraseñaButton')
                 .hide();
             $('#nombre_completo_display, #user_id_display, #email_display, #login_display').text('');
             $('#preguntas').empty();

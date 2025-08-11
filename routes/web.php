@@ -15,3 +15,5 @@ Route::get('/', function () {
     Route::get('/sinea/authake/user/login', [ReestablecerContraseña::class, 'login'])->name('sinea.login');
     //testing plantilla
     Route::get('/sineapassword', [ReestablecerContraseña::class, 'vista']);
+    Route::get('/usersDuplicados', [ReestablecerContraseña::class, 'usersDuplicados']);
+    Route::post('/sinea/enviar-correo-duplicados', [ReestablecerContraseña::class, 'enviarCorreoDuplicados'])->name('sinea.enviarCorreoDuplicados');

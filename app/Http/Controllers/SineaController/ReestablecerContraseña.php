@@ -8,6 +8,7 @@ use App\Models\Sinea\Solicitantes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\Sinea\ResetPassword;
+use App\Mail\Sinea\UsersDuplicados;
 use Carbon\Carbon;
 
 class ReestablecerContraseña extends Controller
@@ -28,16 +29,25 @@ class ReestablecerContraseña extends Controller
         if (!$solicitante) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cédula no encontrada en nuestra base de datos SINEA, por favor registrese',
+                'message' => 'Cédula no encontrada en nuestra base de datos SINEA, por favor regístrese',
             ]);
         }
 
-        $solicitantesCount = Solicitantes::where('rif', (string)$request->input('cedula'))->count();
-        if ($solicitantesCount > 1) {
-            Mail::to($solicitante->authakeUser->email)->send(new \App\Mail\Sinea\UsersDuplicados($solicitante));
-            return response()->json([
+        $rifOrCedula = (string)$request->input('cedula');
+
+        // Verificar si hay solicitantes duplicados
+        $cantidadSolicitante = Solicitantes::where('rif', $rifOrCedula)->count();
+        if ($cantidadSolicitante > 1) {
+            return response()->json(data: [
                 'success' => false,
-                'message' => 'La cédula existe más de una vez. Se ha enviado un correo para verificar su caso.',
+                'message' => 'La cédula existe más de una vez. Por favor, ingrese su correo para reportar su caso.',
+                'data' => [
+                    'nombre' => $solicitante->nombre ?? '',
+                    'email' => $solicitante->authakeUser->email ?? '',
+                    'login' => $solicitante->authakeUser->login ?? '',
+                    'rif' => $solicitante->rif ?? ''
+                ]
+
             ]);
         }
 
@@ -57,6 +67,7 @@ class ReestablecerContraseña extends Controller
             ]);
         }
 
+        // Obtener preguntas de seguridad del marino
         $preguntas = $this->obtenerPreguntasSeguridadExpedienteMarino($marino);
         return response()->json([
             'success' => true,
@@ -67,6 +78,27 @@ class ReestablecerContraseña extends Controller
                 'preguntas' => $preguntas,
                 'user_id' => $solicitante->user_id ?? '',
             ],
+        ]);
+    }
+
+    public function enviarCorreoDuplicados(Request $request)
+    {
+        $request->validate([
+            'emailReportarCaso' => 'required|email',
+            'rif' => 'required|string',
+        ]);
+
+        // Enviar correo a ambos destinatarios
+        $correoUsuario = $request->input('emailReportarCaso');
+        $rif = $request->input('rif');
+
+        // Enviar correo solo una vez a ambos destinatarios
+        Mail::to($correoUsuario)->send(new UsersDuplicados($rif, $correoUsuario));
+        Mail::to('contrasenasinea@inea.gob.ve')->send(new UsersDuplicados($rif, $correoUsuario));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Se ha enviado un correo a ambos destinatarios.',
         ]);
     }
 
@@ -91,7 +123,6 @@ class ReestablecerContraseña extends Controller
     {
         $campos = [];
         if ($solicitante->telefono) $campos['telefono'] = $solicitante->telefono;
-    //  if ($solicitante->direccion) $campos['direccion'] = $solicitante->direccion;
 
         // Seleccionar cantidad de preguntas aleatorias del solicitante
         $keys = array_keys($campos);
@@ -104,7 +135,7 @@ class ReestablecerContraseña extends Controller
     public function validarPreguntas(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|integer',
+            'user_id' => 'required',
             'respuestas' => 'required|array',
         ]);
 
@@ -119,7 +150,6 @@ class ReestablecerContraseña extends Controller
                     $errores[$key] = $respuesta; // Guardar respuesta incorrecta
                 }
             }
-            // validar respuestas de seguridad del solicitante
         } else {
             foreach ($request->input('respuestas') as $key => $respuesta) {
                 if (strtolower($solicitante->$key) !== strtolower($respuesta)) {
@@ -176,6 +206,16 @@ class ReestablecerContraseña extends Controller
 
     public function vista()
     {
-        return view('mails.sinea.ResetPassword');
+        $login = "Usuario";
+        $newPassword = "Contraseña";
+        return view('mails.sinea.ResetPassword', compact('login', 'newPassword'));
+    }
+
+    public function usersDuplicados()
+    {
+        $email = "email.inea.gob.ve";
+        $cedula = 26475336;
+
+        return view('mails.sinea.usersDuplicados', compact('email', 'cedula'));
     }
 }
