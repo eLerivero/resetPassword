@@ -42,8 +42,9 @@ class ReestablecerContraseña extends Controller
                 'success' => false,
                 'message' => 'La cédula existe más de una vez. Por favor, ingrese su correo para reportar su caso.',
                 'data' => [
-                    'nombre' => $solicitante->nombre ?? '',
+                    'nombre' => $solicitante->nombre ?? 'NO DISPONIBLE',
                     'email' => $solicitante->authakeUser->email ?? '',
+                    'user_id' => $solicitante->user_id ?? '',
                     'login' => $solicitante->authakeUser->login ?? '',
                     'rif' => $solicitante->rif ?? ''
                 ]
