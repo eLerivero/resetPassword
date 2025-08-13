@@ -46,7 +46,7 @@ class ReestablecerContraseña extends Controller
                     'email' => $solicitante->authakeUser->email ?? '',
                     'user_id' => $solicitante->user_id ?? '',
                     'login' => $solicitante->authakeUser->login ?? '',
-                    'rif' => $solicitante->rif ?? ''
+                    'cedula' => $solicitante->rif ?? ''
                 ]
 
             ]);
@@ -64,6 +64,7 @@ class ReestablecerContraseña extends Controller
                     'login' => $solicitante->authakeUser->login ?? '',
                     'preguntas' => $preguntas,
                     'user_id' => $solicitante->user_id ?? '',
+                    'cedula' => $solicitante->rif ?? ''
                 ],
             ]);
         }
@@ -78,20 +79,24 @@ class ReestablecerContraseña extends Controller
                 'login' => $solicitante->authakeUser->login ?? '',
                 'preguntas' => $preguntas,
                 'user_id' => $solicitante->user_id ?? '',
+                'cedula' => $solicitante->rif ?? ''
+
             ],
         ]);
     }
 
     public function enviarCorreoDuplicados(Request $request)
     {
+
+       // dd($request);
         $request->validate([
             'emailReportarCaso' => 'required|email',
-            'rif' => 'required|string',
+            'cedula_display' => 'required|string',
         ]);
 
         // Enviar correo a ambos destinatarios
         $correoUsuario = $request->input('emailReportarCaso');
-        $rif = $request->input('rif');
+        $rif = $request->input('cedula_display');
 
         // Enviar correo solo una vez a para reportar caso de duplicidad
         Mail::to($correoUsuario)->send(new UsersDuplicados($rif, $correoUsuario));

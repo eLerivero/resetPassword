@@ -52,6 +52,14 @@
                                                             </div>
                                                         </div>
                                                         <div class="list-group-item d-flex align-items-center">
+                                                            <div class="">
+                                                                <i class="fas fa-id-badge me-2"></i>
+                                                                <div class="w-100">
+                                                                    <strong>CI/RIF</strong> <span id="cedula_display"></span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="list-group-item d-flex align-items-center">
                                                             <i class="fas fa-user-circle me-2"></i>
                                                             <div class="w-100">
                                                                 <strong>Nombre completo/Razón Social:</strong> <span id="nombre_completo_display"></span>
@@ -139,7 +147,7 @@
             // Evento para el botón de reportar caso por duplicados
             $('#btnReportarCaso').click(function() {
                 const email = $('#emailReportarCasoInput').val();
-                const rif = $('#user_id_display').text();
+                const cedula = $('#cedula_display').text();
 
                 if (!email || !validateEmail(email)) {
                     mostrarAlerta('Por favor ingrese un correo electrónico válido', 'error');
@@ -152,7 +160,7 @@
                     method: 'POST',
                     data: {
                         emailReportarCaso: email,
-                        rif: rif,
+                        cedula_display: cedula,
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
@@ -214,6 +222,7 @@
             // Mostrar información general del solicitante
             $('#nombre_completo_display').text(data.nombre || 'No disponible');
             $('#user_id_display').text(data.user_id || 'No disponible');
+            $('#cedula_display').text(data.cedula || 'No disponible');
             $('#email_display').text(data.email || 'No disponible');
             $('#login_display').text(data.login || 'No disponible');
             $('#solicitanteInfo').show();
