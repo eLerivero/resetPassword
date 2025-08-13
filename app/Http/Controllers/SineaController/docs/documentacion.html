@@ -1,31 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentación Controlador ReestablecerContraseña</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        pre {
+            background: #eaeaea;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        code {
+            background: #eaeaea;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+   <h1>Documentación del Controlador ReestablecerContraseña</h1>
+<p>Autor: Luis Rivero | Correo: lrivero@inea.gob.ve</p>
+
+    <h2>Descripción General</h2>
+    <p>Este controlador maneja la lógica para el restablecimiento de contraseñas en el sistema SINEA.</p>
+
+    <h2>Código del Controlador</h2>
+    <pre><code>
 <?php
 
+// Define el espacio de nombres del controlador
 namespace App\Http\Controllers\SineaController;
 
-use App\Http\Controllers\Controller;
-use App\Models\Sinea\Marinos;
-use App\Models\Sinea\Solicitantes;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\Sinea\ResetPassword;
-use App\Mail\Sinea\UsersDuplicados;
-use Carbon\Carbon;
+// Importa las clases necesarias
+use App\Http\Controllers\Controller; // Clase base Controller de Laravel
+use App\Models\Sinea\Marinos; // Modelo para marinos
+use App\Models\Sinea\Solicitantes; // Modelo para solicitantes
+use Illuminate\Http\Request; // Clase para manejar solicitudes HTTP
+use Illuminate\Support\Facades\Mail; // Facade para enviar correos
+use App\Mail\Sinea\ResetPassword; // Clase de correo para restablecer contraseña
+use App\Mail\Sinea\UsersDuplicados; // Clase de correo para usuarios duplicados
+use Carbon\Carbon; // Clase para manejar fechas y horas
 
+// Define la clase ReestablecerContraseña que extiende de Controller
 class ReestablecerContraseña extends Controller
 {
+    // Método para mostrar la vista principal
     public function index()
     {
+        // Retorna la vista 'desarrollo.page'
         return view('desarrollo.page');
     }
 
+    // Método para buscar un solicitante por su cédula
     public function buscarSolicitante(Request $request)
     {
+        // Valida que el campo 'cedula' sea requerido y de tipo string
         $request->validate([
             'cedula' => 'required|string',
         ]);
 
+        // Busca un solicitante en la base de datos por su RIF (cédula)
         $solicitante = Solicitantes::with('authakeUser')->where('rif', 'like', (string)$request->input('cedula'))->first();
 
+        // Si no se encuentra el solicitante, retorna un mensaje de error
         if (!$solicitante) {
             return response()->json([
                 'success' => false,
@@ -33,9 +82,10 @@ class ReestablecerContraseña extends Controller
             ]);
         }
 
+        // Almacena la cédula en una variable
         $rifOrCedula = (string)$request->input('cedula');
 
-        // Verificar si hay solicitantes duplicados
+        // Verifica si hay solicitantes duplicados
         $cantidadSolicitante = Solicitantes::where('rif', $rifOrCedula)->count();
         if ($cantidadSolicitante > 1) {
             return response()->json(data: [
@@ -48,10 +98,10 @@ class ReestablecerContraseña extends Controller
                     'login' => $solicitante->authakeUser->login ?? '',
                     'rif' => $solicitante->rif ?? ''
                 ]
-
             ]);
         }
 
+        // Busca un marino por su cédula
         $marino = Marinos::where('ci', (string)$request->input('cedula'))->first();
         if (!$marino) {
             // Obtener preguntas de seguridad del solicitante
@@ -82,37 +132,42 @@ class ReestablecerContraseña extends Controller
         ]);
     }
 
+    // Método para enviar un correo en caso de cédulas duplicadas
     public function enviarCorreoDuplicados(Request $request)
     {
+        // Valida que los campos 'emailReportarCaso' y 'rif' sean requeridos
         $request->validate([
             'emailReportarCaso' => 'required|email',
             'rif' => 'required|string',
         ]);
 
-        // Enviar correo a ambos destinatarios
+        // Almacena el correo del usuario y el RIF
         $correoUsuario = $request->input('emailReportarCaso');
         $rif = $request->input('rif');
 
-        // Enviar correo solo una vez a para reportar caso de duplicidad
+        // Envía un correo a los destinatarios especificados
         Mail::to($correoUsuario)->send(new UsersDuplicados($rif, $correoUsuario));
         Mail::to('contrasenasinea@inea.gob.ve')->send(new UsersDuplicados($rif, $correoUsuario));
 
+        // Retorna una respuesta indicando que el caso ha sido reportado
         return response()->json([
             'success' => true,
             'message' => 'Se ha reportado su caso, va recibir un correo con los detalles del reporte.',
         ]);
     }
 
+    // Método privado para obtener preguntas de seguridad del expediente del marino
     private function obtenerPreguntasSeguridadExpedienteMarino($marino)
     {
         $campos = [];
+        // Agrega los campos disponibles del marino a un array
         if ($marino->fecha_nacimiento) $campos['fecha_nacimiento'] = $marino->fecha_nacimiento;
         if ($marino->lugar_nacimiento) $campos['lugar_nacimiento'] = $marino->lugar_nacimiento;
         if ($marino->sexo) $campos['sexo'] = $marino->sexo;
         if ($marino->telefono) $campos['telefono'] = $marino->telefono;
         if ($marino->estado_civil) $campos['estado_civil'] = $marino->estado_civil;
 
-        // Seleccionar 3 preguntas aleatorias del expediente de marino
+        // Selecciona 3 preguntas aleatorias del expediente del marino
         $keys = array_keys($campos);
         shuffle($keys);
         $selectedKeys = array_slice($keys, 0, 3);
@@ -120,12 +175,14 @@ class ReestablecerContraseña extends Controller
         return array_intersect_key($campos, array_flip($selectedKeys));
     }
 
+    // Método privado para obtener preguntas de seguridad del solicitante
     private function obtenerPreguntasSeguridadSolicitante($solicitante)
     {
         $campos = [];
+        // Agrega el teléfono del solicitante si está disponible
         if ($solicitante->telefono) $campos['telefono'] = $solicitante->telefono;
 
-        // Seleccionar cantidad de preguntas aleatorias del solicitante
+        // Selecciona una pregunta aleatoria del solicitante
         $keys = array_keys($campos);
         shuffle($keys);
         $selectedKeys = array_slice($keys, 0, 1);
@@ -133,36 +190,43 @@ class ReestablecerContraseña extends Controller
         return array_intersect_key($campos, array_flip($selectedKeys));
     }
 
+    // Método para validar las respuestas a las preguntas de seguridad
     public function validarPreguntas(Request $request)
     {
+        // Valida que los campos 'user_id' y 'respuestas' sean requeridos
         $request->validate([
             'user_id' => 'required',
             'respuestas' => 'required|array',
         ]);
 
+        // Busca el solicitante por su user_id
         $solicitante = Solicitantes::with('authakeUser')->where('user_id', $request->input('user_id'))->firstOrFail();
         $marino = Marinos::where('solicitante_id', $solicitante->id ?? '')->first();
 
         // Validar respuesta de seguridad del marino
         $errores = [];
         if ($marino) {
+            // Compara las respuestas proporcionadas con las respuestas correctas
             foreach ($request->input('respuestas') as $key => $respuesta) {
                 if (strtolower($marino->$key) !== strtolower($respuesta)) {
-                    $errores[$key] = $respuesta; // Guardar respuesta incorrecta
+                    $errores[$key] = $respuesta; // Guarda respuesta incorrecta
                 }
             }
         } else {
+            // Compara las respuestas proporcionadas con las respuestas correctas del solicitante
             foreach ($request->input('respuestas') as $key => $respuesta) {
                 if (strtolower($solicitante->$key) !== strtolower($respuesta)) {
-                    $errores[$key] = $respuesta; // Guardar respuesta incorrecta
+                    $errores[$key] = $respuesta; // Guarda respuesta incorrecta
                 }
             }
         }
 
+        // Si hay errores, retorna un mensaje con las respuestas incorrectas
         if (!empty($errores)) {
             return response()->json(['success' => false, 'message' => 'Algunas respuestas son incorrectas.', 'errores' => $errores]);
         }
 
+        // Si las respuestas son correctas, retorna un mensaje de éxito
         return response()->json([
             'success' => true,
             'message' => 'Las respuestas son correctas. Puede restablecer su contraseña.',
@@ -170,19 +234,25 @@ class ReestablecerContraseña extends Controller
         ]);
     }
 
+    // Método para actualizar la contraseña del usuario
     public function updatePassword(Request $request)
     {
+        // Valida que los campos 'user_id' y 'email' sean requeridos
         $request->validate([
             'user_id' => 'required|string',
             'email' => 'required|email',
         ]);
 
+        // Busca el solicitante por su user_id
         $solicitante = Solicitantes::with('authakeUser')->where('user_id', $request->input('user_id'))->firstOrFail();
+        // Genera una nueva contraseña aleatoria
         $newPassword = bin2hex(random_bytes(4));
+        // Hashea la nueva contraseña
         $hashedPassword = md5($newPassword);
 
         $authakeUser = $solicitante->authakeUser;
 
+        // Si se encuentra el usuario, actualiza la contraseña y envía un correo
         if ($authakeUser) {
             $authakeUser->update([
                 'password' => $hashedPassword,
@@ -191,6 +261,7 @@ class ReestablecerContraseña extends Controller
                 'cambios_hora' => Carbon::now(),
             ]);
 
+            // Envía un correo con la nueva contraseña
             Mail::to($request->input('email'))->send(new ResetPassword($newPassword, $authakeUser->login));
 
             return response()->json([
@@ -202,21 +273,60 @@ class ReestablecerContraseña extends Controller
             ]);
         }
 
+        // Si no se encuentra el usuario, retorna un mensaje de error
         return response()->json(['success' => false, 'message' => 'Usuario no encontrado.'], 404);
     }
 
+    // Método para mostrar la vista del correo de restablecimiento de contraseña
     public function vista()
     {
-        $login = "Usuario";
-        $newPassword = "Contraseña";
+        $login = "Usuario"; // Variable para el nombre de usuario
+        $newPassword = "Contraseña"; // Variable para la nueva contraseña
+        // Retorna la vista para el correo de restablecimiento de contraseña
         return view('mails.sinea.ResetPassword', compact('login', 'newPassword'));
     }
 
+    // Método para mostrar la vista del correo de usuarios duplicados
     public function usersDuplicados()
     {
-        $correo = "email.inea.gob.ve";
-        $rif = 26475336;
+        $email = "email.inea.gob.ve"; // Variable para el correo electrónico
+        $cedula = 26475336; // Variable para la cédula
 
-        return view('mails.sinea.usersDuplicados', compact('correo', 'rif'));
+        // Retorna la vista para el correo de usuarios duplicados
+        return view('mails.sinea.usersDuplicados', compact('email', 'cedula'));
     }
 }
+    </code></pre>
+
+    <h2>Explicación del Código</h2>
+
+    <h3>Espacio de Nombres</h3>
+    <p>El controlador se encuentra en el espacio de nombres <code>App\Http\Controllers\SineaController</code>.</p>
+
+    <h3>Importaciones</h3>
+    <p>Se importan las clases necesarias para el funcionamiento del controlador, incluyendo modelos, clases de correo y la clase Carbon para manejar fechas.</p>
+
+    <h3>Clase ReestablecerContraseña</h3>
+    <p>La clase <code>ReestablecerContraseña</code> extiende de <code>Controller</code>, lo que le permite heredar métodos y propiedades de la clase base de Laravel.</p>
+
+    <h3>Métodos</h3>
+    <ul>
+        <li><strong>index</strong>: Retorna la vista principal para el restablecimiento de contraseña.</li>
+        <li><strong>buscarSolicitante</strong>: Busca un solicitante en la base de datos por su cédula y verifica si existe.</li>
+        <li><strong>enviarCorreoDuplicados</strong>: Envía un correo para reportar un caso de cédula duplicada.</li>
+        <li><strong>obtenerPreguntasSeguridadExpedienteMarino</strong>: Selecciona preguntas de seguridad aleatorias del expediente del marino.</li>
+        <li><strong>obtenerPreguntasSeguridadSolicitante</strong>: Selecciona preguntas de seguridad aleatorias del solicitante.</li>
+        <li><strong>validarPreguntas</strong>: Valida las respuestas a las preguntas de seguridad proporcionadas por el usuario.</li>
+        <li><strong>updatePassword</strong>: Actualiza la contraseña del usuario y envía un correo con la nueva contraseña.</li>
+        <li><strong>vista</strong>: Retorna la vista para el correo de restablecimiento de contraseña.</li>
+        <li><strong>usersDuplicados</strong>: Retorna la vista para el correo de usuarios duplicados.</li>
+    </ul>
+
+    <h3>Validaciones</h3>
+    <p>Se realizan validaciones en los métodos para asegurar que los datos recibidos son correctos antes de procesarlos.</p>
+
+    <h3>Envío de Correos</h3>
+    <p>Se envían correos electrónicos utilizando la clase <code>Mail</code> de Laravel para notificar a los usuarios sobre el restablecimiento de contraseñas y casos duplicados.</p>
+
+</body>
+</html>

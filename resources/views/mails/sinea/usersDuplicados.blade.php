@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verificación de cédula duplicada - INEA</title>
+    <title>Reporte de Duplicidad de Cédula - INEA</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -48,12 +48,13 @@
     <div class="email-wrapper">
         <div class="header">
             <img src="https://testr.inea.gob.ve/assets/img/logos/inea.png" alt="INEA" class="logo">
-            <h3>Verificación de cédula duplicada</h3>
+            <h3>Reporte de Duplicidad de Cédula</h3>
         </div>
         <div class="body">
-            <p>Se ha generado esta solicitud por cédula duplicada, los datos de la cédula duplicada son: {{$cedula}}.</p>
-            <p>El correo que ingresó el usuario para que reporten su solución es: {{$correo}}.</p>
-            <strong><p>Solicitud generada desde el servicio de Autogestión SINEA</p></strong>
+            <p>Se ha generado una solicitud debido a la detección de una cédula duplicada. A continuación, se detallan los datos relevantes:</p>
+            <p><strong>Número de Cédula Duplicada:</strong> {{$rif}}</p>
+            <p><strong>Correo del Usuario para Reportar Solución:</strong> {{$correo}}</p>
+            <strong><p>Solicitud generada desde el servicio de Autogestión SINEA.</p></strong>
         </div>
         <div class="footer">
             <p>&copy; {{ date('Y') }} INEA. Todos los derechos reservados.</p>

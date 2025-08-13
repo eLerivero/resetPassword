@@ -11,20 +11,20 @@ class UsersDuplicados extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $cedula;
+    public $rif;
     public $correo;
 
-    public function __construct($cedula, $correo)
+    public function __construct($rif, $correo)
     {
-        $this->cedula = $cedula;
+        $this->rif = $rif;
         $this->correo = $correo;
     }
 
     public function build()
     {
-        return $this->subject('Verificación de Cédula Duplicada')
+        return $this->subject('Reporte de Duplicidad de Cédula')
             ->with([
-                'cedula' => $this->cedula,
+                'rif' => $this->rif,
                 'correo' => $this->correo
             ])
             ->view('mails.sinea.usersDuplicados');

@@ -103,8 +103,8 @@
                                             </div>
                                         </div>
 
-                                        <div class="mb-3" id="reportarCasoButton" style="display:none;">
-                                            <button type="button" class="btn btn-warning" id="btnReportarCaso">Reportar Caso <i class="fas fa-paper-plane"></i></button>
+                                        <div class="mb-3 " id="reportarCasoButton" style="display:none;">
+                                         <center> <button type="button" class="btn btn-warning" id="btnReportarCaso">Reportar Caso <i class="fas fa-paper-plane"></i></button> </center>
                                         </div>
 
                                         <div class="modal-footer justify-content-center">
@@ -232,7 +232,7 @@
             $('#emailReportarCaso, #reportarCasoButton').show(); // Mostrar el campo de email y botón
             $('#preguntasSeguridad, #resetPasswordButton, #solicitarContraseñaButton').hide(); // Ocultar otros elementos
             $('#emailReportarCasoInput').val('').removeClass('is-invalid'); // Limpiar el campo de email
-            mostrarAlerta('La cédula existe más de una vez. Por favor, ingrese su correo para reportar su caso.', 'warning'); // Alerta específica
+            mostrarAlerta('La cédula existe más de una vez. Por favor, ingrese su correo para poderreportar su caso.', 'warning'); // Alerta específica
         }
 
         function mostrarPreguntasSeguridad(preguntas) {
@@ -396,7 +396,7 @@
 
         function resetForm() {
             $('#resetPasswordForm')[0].reset();
-            $('#solicitanteInfo, #preguntasSeguridad, #resetPasswordButton, #alert, #emailContainer, #reportarCasoButton, #solicitarContraseñaButton').hide();
+            $('#solicitanteInfo, #preguntasSeguridad, #resetPasswordButton, #alert, #emailContainer, #emailReportarCaso, #reportarCasoButton, #solicitarContraseñaButton').hide();
             $('#nombre_completo_display, #user_id_display, #email_display, #login_display').text('');
             $('#preguntas').empty();
             $('#cedula, #email, #emailReportarCasoInput').removeClass('valid invalid');
